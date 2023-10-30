@@ -15,7 +15,7 @@ env:
 
 # 실제 실행될 내용들을 정의합니다.
 jobs:
-    build:
+    build-and-push:
         runs-on: ubuntu-latest # ubuntu 최신 버전에서 script를 실행
 
         steps:
