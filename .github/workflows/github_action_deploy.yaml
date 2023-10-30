@@ -69,5 +69,5 @@ jobs:
                   key: ${{ env.EC2_PRIVATE_KEY }} # EC2 인스턴스의 키페어(.pem)
                   port: ${{ env.EC2_SSH_PORT }} # EC2 인스턴스의 SSH 포트
                   script: |
-                      sudo docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-                      sudo docker-compose up -d
+                    sudo docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+                    sudo docker-compose up -d
