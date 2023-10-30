@@ -10,13 +10,21 @@ on:
 permissions:
     contents: read
 
+env:
+    DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+    DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+    DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}
+    PROPERTIES_YAML: ${{ secrets.PROPERTIES_YAML }}
+
 # 실제 실행될 내용들을 정의합니다.
 jobs:
     build:
         runs-on: ubuntu-latest # ubuntu 최신 버전에서 script를 실행
 
         steps:
-            - uses: actions/checkout@v3 # 지정한 저장소(현재 REPO)에서 코드를 워크플로우 환경으로 가져오도록 하는 github action
+            - name: Checkout
+              uses: actions/checkout@v3
 
             # open jdk 17 버전 환경을 세팅
             - name: Set up JDK 17
@@ -30,7 +38,7 @@ jobs:
               run: |
                   cd ./src/main/resources
                   touch ./application.yaml
-                  echo "${{ secrets.PROPERTIES_YAML }}" > ./application.yaml
+                  echo "${{ env.PROPERTIES_YAML }}" > ./application.yaml
               shell: bash
 
             # gradle을 통해 소스를 빌드.
@@ -39,13 +47,19 @@ jobs:
                   chmod +x ./gradlew
                   ./gradlew clean build -x test
 
-            # dockerfile을 통해 이미지를 빌드하고, 이를 docker repo로 push 합니다.
-            # 이 때 사용되는 ${{ secrets.DOCKER_REPO }}/directors-dev 가 위에서 만든 도커 repository 입니다.
-            - name: Docker build & push to docker repo
-              run: |
-                  docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-                  docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}/directors-dev .
-                  docker push ${{ secrets.DOCKER_REPO }}/directors-dev
+            - name: docker login
+              uses: docker/login-action@v1
+              with:
+                  username: ${{ env.DOCKER_USERNAME }}
+                  password: ${{ env.DOCKER_PASSWORD }}
+
+            - name: Build and push docker image
+              uses: docker/build-push-action@v2
+              with:
+                  context: .
+                  push: true #빌드 후 배포 여부 체크
+                  tags: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+
 
             # appleboy/ssh-action@master 액션을 사용하여 지정한 서버에 ssh로 접속하고, script를 실행합니다.
             # script의 내용은 도커의 기존 프로세스들을 제거하고, docker repo로부터 방금 위에서 push한 내용을 pull 받아 실행하는 것입니다.
