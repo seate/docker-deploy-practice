@@ -7,15 +7,18 @@ on:
         branches: [ "master" ]
 
 env:
-    DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
-    DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-    DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-    DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}
-    PROPERTIES_YAML: ${{ secrets.PROPERTIES_YAML }}
-    EC2_HOST: ${{ secrets.EC2_HOST }}
-    EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-    EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
-    EC2_SSH_PORT: ${{ secrets.EC2_SSH_PORT }}
+    DOCKER_REPO: ${{ secrets.DOCKER_REPO }}                                             # Docker Hub Repository 이름
+    DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}                                     # Docker Hub Username
+    DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}                                     # Docker Hub Password
+    DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}                                 # Docker Hub에 올릴 이미지 이름
+    PROPERTIES_YAML: ${{ secrets.PROPERTIES_YAML }}                                     # application.yaml 파일 내용
+    EC2_HOST: ${{ secrets.EC2_HOST }}                                                   # EC2 인스턴스의 퍼블릭 IP
+    EC2_USERNAME: ${{ secrets.EC2_USERNAME }}                                           # EC2 인스턴스의 유저명              ex) ubuntu
+    EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}                                     # EC2 인스턴스의 키페어(.pem) 내용
+    EC2_SSH_PORT: ${{ secrets.EC2_SSH_PORT }}                                           # EC2 인스턴스의 SSH 포트            ex) 22
+    EC2_WORKSPACE: /home/${{secrets.EC2_USERNAME}}/${{ secrets.EC2_WORKSPACE_NAME }}    # EC2 인스턴스의 작업 디렉토리         ex) /home/ubuntu/myWorkSpace
+    SERVER_DOCKER_TO_SERVER_PORT: ${{ secrets.SERVER_DOCKER_TO_SERVER_PORT }}           # 서버와 docker 사이를 연결하기 위해서 docker가 허용할 포트
+    SERVER_PORT: ${{ secrets.SERVER_PORT }}                                             # 서버의 포트를 docker의 포트와 연결
 
 # 실제 실행될 내용들을 정의합니다.
 jobs:
@@ -40,6 +43,38 @@ jobs:
                   echo "${{ env.PROPERTIES_YAML }}" > ./application.yaml
               shell: bash
 
+            # docker-compose.yml 내의 변수를 Github secrets로부터 받은 데이터로 변경
+            - name: Replace docker-compose.yml variable
+              run: |
+                  sed 's/${docker_username}/${{ env.DOCKER_USERNAME }}/g' ./docker-compose.yml
+                  sed 's/${docker_image_name}/${{ env.DOCKER_IMAGE_NAME }}/g' ./docker-compose.yml
+                  sed 's/${server_to_docker_port}/${{ env.SERVER_DOCKER_TO_SERVER_PORT }}/g' ./docker-compose.yml
+                  sed 's/${server_port}/${{ env.SERVER_PORT }}/g' ./docker-compose.yml
+                  
+
+            #서버 작업 디렉토리 생성, 서버의 docker-compose.yml 삭제
+            - name: Create EC2 Workspace and Delete docker-compose.yml
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ env.EC2_HOST }} # EC2 인스턴스의 퍼블릭 IP
+                  username: ${{ env.EC2_USERNAME }} # EC2 인스턴스의 유저명
+                  key: ${{ env.EC2_PRIVATE_KEY }} # EC2 인스턴스의 키페어(.pem)
+                  port: ${{ env.EC2_SSH_PORT }} # EC2 인스턴스의 SSH 포트
+                  script: |
+                      mkdir -p ${{ env.EC2_WORKSPACE }} 
+                      cd ${{ env.EC2_WORKSPACE }}
+                      rm -rf ./docker-compose.yml
+
+            # docker-compose.yml 파일을 scp로 EC2 인스턴스로 전송
+            - name: SCP docker-compose.yml
+              run: |
+                  scp -i ${{ env.EC2_PRIVATE_KEY }} -P ${{ env.EC2_SSH_PORT }} ./docker-compose.yml ${{ env.EC2_USERNAME }}@${{ env.EC2_HOST }}:${{ env.EC2_WORKSPACE }}/docker-compose.yml
+
+            # 현재 프로젝트 내의 docker-compose.yml 파일 삭제
+            - name: Delete docker-compose.yml in project
+              run: |
+                  rm -rf ./docker-compose.yml
+
             # gradle을 통해 소스를 빌드.
             - name: Build with Gradle
               run: |
@@ -59,7 +94,6 @@ jobs:
                   push: true #빌드 후 배포 여부 체크
                   tags: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
-
             - name: Deploy to EC2
               uses: appleboy/ssh-action@master
               with:
@@ -68,5 +102,6 @@ jobs:
                   key: ${{ env.EC2_PRIVATE_KEY }} # EC2 인스턴스의 키페어(.pem)
                   port: ${{ env.EC2_SSH_PORT }} # EC2 인스턴스의 SSH 포트
                   script: |
+                    cd ${{ env.EC2_WORKSPACE }}
                     sudo docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
                     sudo docker-compose up -d
