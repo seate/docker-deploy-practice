@@ -67,8 +67,14 @@ jobs:
 
             # docker-compose.yml 파일을 scp로 EC2 인스턴스로 전송
             - name: SCP docker-compose.yml
-              run: |
-                  scp -i ${{ env.EC2_PRIVATE_KEY }} -P ${{ env.EC2_SSH_PORT }} $GITHUB_WORKSPACE/docker-compose.yml ${{ env.EC2_USERNAME }}@${{ env.EC2_HOST }}:${{ env.EC2_WORKSPACE }}/
+              uses: appleboy/scp-action@master
+              with:
+                  host: ${{ env.EC2_HOST }} # EC2 인스턴스의 퍼블릭 IP
+                  username: ${{ env.EC2_USERNAME }} # EC2 인스턴스의 유저명
+                  key: ${{ env.EC2_PRIVATE_KEY }} # EC2 인스턴스의 키페어(.pem)
+                  port: ${{ env.EC2_SSH_PORT }} # EC2 인스턴스의 SSH 포트
+                  source: ./docker-compose.yml # 현재 프로젝트 내의 docker-compose.yml 파일
+                  target: ${{ env.EC2_WORKSPACE }}/docker-compose.yml # EC2 인스턴스의 작업 디렉토리 내의 docker-compose.yml 파일
 
             # 현재 프로젝트 내의 docker-compose.yml 파일 삭제
             - name: Delete docker-compose.yml in project
