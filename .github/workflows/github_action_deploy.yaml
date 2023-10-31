@@ -46,10 +46,11 @@ jobs:
             # docker-compose.yml 내의 변수를 Github secrets로부터 받은 데이터로 변경
             - name: Replace docker-compose.yml variable
               run: |
-                  sed 's/${docker_username}/${{ env.DOCKER_USERNAME }}/g' ./docker-compose.yml
-                  sed 's/${docker_image_name}/${{ env.DOCKER_IMAGE_NAME }}/g' ./docker-compose.yml
-                  sed 's/${server_to_docker_port}/${{ env.SERVER_DOCKER_TO_SERVER_PORT }}/g' ./docker-compose.yml
-                  sed 's/${server_port}/${{ env.SERVER_PORT }}/g' ./docker-compose.yml
+                  sed 's/docker_username/${{ env.DOCKER_USERNAME }}/g' ./docker-compose.yml
+                  sed 's/docker_image_name/${{ env.DOCKER_IMAGE_NAME }}/g' ./docker-compose.yml
+            #방법을 못 찾아서 일단 주석처리
+            #sed 's/${server_to_docker_port}/${{ env.SERVER_DOCKER_TO_SERVER_PORT }}/g' ./docker-compose.yml
+            #sed 's/${server_port}/${{ env.SERVER_PORT }}/g' ./docker-compose.yml
                   
 
             #서버 작업 디렉토리 생성, 서버의 docker-compose.yml 삭제
