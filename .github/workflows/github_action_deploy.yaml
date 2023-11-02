@@ -99,7 +99,7 @@ jobs:
                   push: true #빌드 후 배포 여부 체크
                   tags: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
-            - name: Deploy to EC2
+            - name: Deploy to EC2 by Docker
               uses: appleboy/ssh-action@master
               with:
                   host: ${{ env.EC2_HOST }} # EC2 인스턴스의 퍼블릭 IP
