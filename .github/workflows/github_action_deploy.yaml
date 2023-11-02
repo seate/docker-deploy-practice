@@ -17,7 +17,7 @@ env:
     EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}                                     # EC2 인스턴스의 키페어(.pem) 내용
     EC2_SSH_PORT: ${{ secrets.EC2_SSH_PORT }}                                           # EC2 인스턴스의 SSH 포트            ex) 22
     EC2_WORKSPACE: /home/${{secrets.EC2_USERNAME}}/${{ secrets.EC2_WORKSPACE_NAME }}    # EC2 인스턴스의 작업 디렉토리         ex) /home/ubuntu/myWorkSpace
-    SERVER_DOCKER_TO_SERVER_PORT: ${{ secrets.SERVER_DOCKER_TO_SERVER_PORT }}           # 서버와 docker 사이를 연결하기 위해서 docker가 허용할 포트
+    DOCKER_PORT: ${{ secrets.DOCKER_PORT }}           # 서버와 docker 사이를 연결하기 위해서 docker가 허용할 포트
     SERVER_PORT: ${{ secrets.SERVER_PORT }}                                             # 서버의 포트를 docker의 포트와 연결
 
 # 실제 실행될 내용들을 정의합니다.
@@ -49,7 +49,7 @@ jobs:
               env:
                   DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
                   DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
-                  SERVER_DOCKER_TO_SERVER_PORT: ${{ env.SERVER_DOCKER_TO_SERVER_PORT }}
+                  DOCKER_PORT: ${{ env.DOCKER_PORT }}
                   SERVER_PORT: ${{ env.SERVER_PORT }}
               with:
                   input: docker-compose.template.yml
