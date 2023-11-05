@@ -57,10 +57,13 @@ jobs:
 
             #서버 작업 디렉토리 생성, 서버의 docker-compose.yml 삭제
             - name: ssh test
-              run: ssh -i ${{ env.SERVER_PRIVATE_KEY }} ${{ env.SERVER_USERNAME }}@${{ env.SERVER_HOST }} "\
-                mkdir -p ${{ env.SERVER_WORKSPACE }}; \ 
-                cd ${{ env.SERVER_WORKSPACE }}; \
-                rm -rf ./docker-compose.yml"
+              run: |
+                  echo "${{ env.SERVER_PRIVATE_KEY }}" > private_key
+                  chmod 600 private_key
+                  ssh -i private_key ${{ env.SERVER_USERNAME }}@${{ env.SERVER_HOST }} "\
+                  mkdir -p ${{ env.SERVER_WORKSPACE }}; \ 
+                  cd ${{ env.SERVER_WORKSPACE }}; \
+                  rm -rf ./docker-compose.yml"
 
             # docker-compose.yml 파일을 scp로 서버로 전송
             - name: SCP docker-compose.yml
