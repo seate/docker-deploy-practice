@@ -11,7 +11,7 @@ env:
     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}                                             # Docker Hub Username
     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}                                             # Docker Hub Password
     DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}                                         # Docker Hub에 올릴 이미지 이름
-    DOCKER_PORT: ${{ secrets.DOCKER_PORT }}                                                     # 서버와 docker 사이를 연결하기 위해서 docker가 허용할 포트
+    DOCKER_PORT: ${{ secrets.DOCKER_PORT }}                                                     # 서버와 Docker를 연결하기 위해서 Docker가 허용할 포트
 
     SERVER_HOST: ${{ secrets.SERVER_HOST }}                                                     # 서버의 퍼블릭 IP
     SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}                                             # 서버의 유저명              ex) ubuntu
