@@ -104,7 +104,7 @@ jobs:
                   tags: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
             - name: Deploy to SERVER by Docker
-              uses: appleboy/ssh-action@1.0.0
+              uses: appleboy/ssh-action@v1.0.0
               with:
                   host: ${{ env.SERVER_HOST }} # 서버의 퍼블릭 IP
                   username: ${{ env.SERVER_USERNAME }} # 서버의 유저명
