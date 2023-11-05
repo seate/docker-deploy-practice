@@ -63,6 +63,7 @@ jobs:
                   username: ${{ env.SERVER_USERNAME }} # 서버의 유저명
                   key: ${{ env.SERVER_PRIVATE_KEY }} # 서버의 키페어(.pem)
                   port: ${{ env.SERVER_SSH_PORT }} # 서버의 SSH 포트
+                  debug: true
                   script: |
                       mkdir -p ${{ env.SERVER_WORKSPACE }} 
                       cd ${{ env.SERVER_WORKSPACE }}
@@ -110,6 +111,7 @@ jobs:
                   username: ${{ env.SERVER_USERNAME }} # 서버의 유저명
                   key: ${{ env.SERVER_PRIVATE_KEY }} # 서버의 키페어(.pem)
                   port: ${{ env.SERVER_SSH_PORT }} # 서버의 SSH 포트
+                  debug: true
                   script: |
                     cd ${{ env.SERVER_WORKSPACE }}
                     sudo docker-compose down
