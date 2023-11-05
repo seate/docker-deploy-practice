@@ -57,7 +57,7 @@ jobs:
 
             #서버 작업 디렉토리 생성, 서버의 docker-compose.yml 삭제
             - name: Create SERVER Workspace and Delete docker-compose.yml
-              uses: appleboy/ssh-action@master
+              uses: appleboy/ssh-action@v1.0.0
               with:
                   host: ${{ env.SERVER_HOST }} # 서버의 퍼블릭 IP
                   username: ${{ env.SERVER_USERNAME }} # 서버의 유저명
@@ -70,7 +70,7 @@ jobs:
 
             # docker-compose.yml 파일을 scp로 서버로 전송
             - name: SCP docker-compose.yml
-              uses: appleboy/scp-action@master
+              uses: appleboy/scp-action@v1.0.0
               with:
                   host: ${{ env.SERVER_HOST }} # 서버의 퍼블릭 IP
                   username: ${{ env.SERVER_USERNAME }} # 서버의 유저명
